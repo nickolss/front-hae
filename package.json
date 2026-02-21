@@ -28,14 +28,13 @@
     "yup": "^1.6.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.22.0",
+    "eslint": "^9.39.3",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@types/node": "^22.15.3",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@types/yup": "^0.32.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^10.0.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",

@@ -46,3 +46,4 @@ coverage/
 
 # Optional: cache
 .cache/
+.vercel

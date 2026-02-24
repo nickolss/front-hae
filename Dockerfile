@@ -1,10 +1,10 @@
-FROM node:24.13.1-alpine AS build
+FROM node:24.14.0-alpine AS build
 
 WORKDIR /app
 
 ARG VITE_API_URL
 
-ENV VITE_API_URL=$VITE_API_BASE_URL
+ENV VITE_API_URL=$VITE_API_URL
 
 COPY package*.json ./
 RUN npm install -g npm@latest

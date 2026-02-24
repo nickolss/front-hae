@@ -1,18 +1,21 @@
-FROM node:24-alpine AS builder
+FROM node:24.13.0-alpine AS build
+
 WORKDIR /app
+
+ARG VITE_API_URL
+
+ENV VITE_API_URL=$VITE_API_BASE_URL
+
 COPY package*.json ./
-RUN npm ci
+RUN npm install -g npm@latest
+RUN npm install
 COPY . .
-RUN npm run build
 
-FROM nginx:alpine
+RUN apk update && apk upgrade openssl libcrypto3 libssl3
 
-RUN rm /etc/nginx/conf.d/default.conf
+RUN addgroup -S appuser && adduser -S appuser -G appuser
+RUN chown -R appuser:appuser /app
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+USER appuser
 
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "run", "dev"]

@@ -57,6 +57,8 @@ export const Register = () => {
       try {
         const response = await api.get<Institution[]>("/institution/getAll");
         setInstitutions(response.data);
+        console.log("Instituições carregadas:", response.data);
+        console.log("api base URL:", api.defaults.baseURL);
       } catch (error) {
         console.error("Erro ao buscar instituições:", error);
       } finally {

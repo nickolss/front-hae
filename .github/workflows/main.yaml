@@ -72,7 +72,6 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/front-hae:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/front-hae:${{ github.sha }}
           build-args: |
-            VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
-            VITE_PORT=${{ secrets.VITE_PORT }}
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
           sbom: true
           provenance: true

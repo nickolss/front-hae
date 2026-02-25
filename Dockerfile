@@ -1,4 +1,4 @@
-FROM node:24-slim AS build
+FROM node:24-slim AS builder
 
 WORKDIR /app
 
@@ -6,13 +6,15 @@ ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
 COPY package*.json ./
-RUN npm install
+RUN npm ci  # npm ci é melhor para CI/CD que npm install
 
 COPY . .
+RUN npm run build
 
-RUN groupadd -r appuser && useradd -r -g appuser -d /app appuser
-RUN chown -R appuser:appuser /app
+FROM nginx:stable-alpine
 
-USER appuser
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-CMD ["npm", "run", "dev"]
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

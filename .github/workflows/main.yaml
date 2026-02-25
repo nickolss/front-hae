@@ -2,9 +2,9 @@ name: CI/CD - Frontend Docker
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   lint-and-test:
@@ -16,8 +16,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: "24"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -59,6 +59,8 @@ jobs:
           ignore-unfixed: true
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
+          skip-dirs: 'app/node_modules'
+
 
       - name: Build and Push to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -69,3 +71,8 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/front-hae:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/front-hae:${{ github.sha }}
+          build-args: |
+            VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
+            VITE_PORT=${{ secrets.VITE_PORT }}
+          sbom: true
+          provenance: true

@@ -80,7 +80,7 @@ export const Register = () => {
       <div className="flex flex-col items-center justify-center h-screen text-center p-4">
         <div className="p-8 max-w-md">
           <img
-            src="/fatec_zona_leste_icon.png"
+            src="/logo_fatec_cor.png"
             alt="Logo da Fatec da Zona Leste"
             className="mb-4 w-26 mx-auto"
           />
@@ -112,7 +112,7 @@ export const Register = () => {
       <div className="flex flex-col items-center justify-center h-screen">
         <div className="p-8 xl:w-xl">
           <img
-            src="/fatec_zona_leste_icon.png"
+            src="/logo_fatec_cor.png"
             alt="Logo da Fatec da Zona Leste"
             className="mb-4 w-24"
           />

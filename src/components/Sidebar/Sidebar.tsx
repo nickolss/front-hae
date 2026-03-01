@@ -262,7 +262,7 @@ export const Sidebar = () => {
     <aside>
       <div className="h-screen  bg-gray-fatec flex flex-col items-center  ">
         <img
-          src="/fatec_zona_leste_icon_branco.png"
+          src="/logo_fatec_br.png"
           alt="Logo da Fatec da Zona Leste"
           className="xl:w-50 w-25 p-4"
         />

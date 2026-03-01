@@ -37,7 +37,7 @@ export const ForgotPassword = () => {
     <div className="flex flex-col items-center justify-center h-screen">
       <div className="p-8 xl:w-xl text-center">
         <img
-          src="/fatec_zona_leste_icon.png"
+          src="/logo_fatec_cor.png"
           alt="Logo"
           className="mb-4 w-24 mx-auto"
         />

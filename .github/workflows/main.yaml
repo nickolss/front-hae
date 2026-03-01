@@ -50,6 +50,16 @@ jobs:
           tags: front-hae:test
           no-cache: true
 
+      - name: Run Trivy scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: "front-hae:test"
+          format: "table"
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
       - name: Build and Push to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v5

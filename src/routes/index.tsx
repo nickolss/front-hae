@@ -20,6 +20,7 @@ import {
   AllHaesByInstitution,
   ViewHae,
   DashboardDev,
+  ManageInstitutionCourses,
   CreateInstitution,
   EditInstitution,
   ListInstitutions,
@@ -73,6 +74,7 @@ export const AppRoutes = () => {
           <Route path="/create-institution" element={<CreateInstitution />} />
           <Route path="/institution/edit/:institutionCode" element={<EditInstitution />} />
           <Route path="/institutions" element={<ListInstitutions />} />
+          <Route path="/institution-courses" element={<ManageInstitutionCourses />} />
           <Route path="/allHaes" element={<AllHaes />} />
           <Route path="/request-closure/:id" element={<RequestClosurePage />} />
           <Route path="/closure-requests" element={<ClosureRequests />} />

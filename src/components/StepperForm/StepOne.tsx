@@ -9,7 +9,7 @@ import { StepOneProps, FormErrors } from "./types/haeFormTypes";
 import { stepOneSchema } from "@/validation/haeFormSchema";
 import { ValidationError } from "yup";
 import {
-  COURSE_OPTIONS,
+  getCourseOptionsByInstitutionCode,
   HAE_TYPE_OPTIONS,
   MODALITY_OPTIONS,
   DIMENSAO_OPTIONS,
@@ -23,6 +23,9 @@ const StepOne: React.FC<StepOneProps> = ({
 }) => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [studentRAs, setStudentRAs] = useState<string[]>([""]);
+  const courseOptions = getCourseOptionsByInstitutionCode(
+    formData.institutionCode
+  );
 
   useEffect(() => {
     if (formData.studentRAs) {
@@ -202,7 +205,7 @@ const StepOne: React.FC<StepOneProps> = ({
         helperText={errors.course || " "}
         disabled={isCompleted}
       >
-        {COURSE_OPTIONS.map((option) => (
+        {courseOptions.map((option) => (
           <MenuItem key={option.value} value={option.value}>
             {option.label}
           </MenuItem>

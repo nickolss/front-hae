@@ -7,7 +7,7 @@ import {
   Button,
 } from "@mui/material";
 import {
-  COURSE_OPTIONS,
+  getCourseOptionsByInstitutionCode,
   HAE_TYPE_OPTIONS,
   STATUS_OPTIONS,
 } from "@/constants/options";
@@ -16,6 +16,7 @@ import { api } from "@/services";
 interface Institution {
   id: string;
   name: string;
+  institutionCode: number;
 }
 
 export interface AdvancedHaeFilters {
@@ -39,6 +40,12 @@ export const AdvancedFilterBar: React.FC<AdvancedFilterBarProps> = ({
 }) => {
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const selectedInstitution = institutions.find(
+    (inst) => inst.id === filters.institutionId
+  );
+  const courseOptions = getCourseOptionsByInstitutionCode(
+    selectedInstitution?.institutionCode
+  );
 
   useEffect(() => {
     const fetchInstitutions = async () => {
@@ -90,7 +97,7 @@ export const AdvancedFilterBar: React.FC<AdvancedFilterBarProps> = ({
             <MenuItem value="">
               <em>Todos</em>
             </MenuItem>
-            {COURSE_OPTIONS.map((opt) => (
+            {courseOptions.map((opt) => (
               <MenuItem key={opt.value} value={opt.value}>
                 {opt.label}
               </MenuItem>

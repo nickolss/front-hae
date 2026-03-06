@@ -1,11 +1,22 @@
 import { Institution, InstitutionPayload } from "@/types/institution";
 import { api } from ".";
 
+export interface InstitutionCourse {
+    id: string;
+    courseName: string;
+    institutionId: string;
+    institutionCode: number;
+    institutionName: string;
+}
+
 export interface IInstitutionService {
 	createInstitution(data: InstitutionPayload): Promise<Institution>;
     getAllInstitutions(): Promise<Institution[]>;
     getInstitutionById(id: string): Promise<Institution>;
     updateInstitution(id: string, data: InstitutionPayload): Promise<Institution>;
+    getCoursesByInstitutionId(institutionId: string): Promise<InstitutionCourse[]>;
+    addInstitutionCourse(institutionId: string, courseName: string): Promise<InstitutionCourse>;
+    removeInstitutionCourse(courseId: string): Promise<void>;
 }
 
 const createInstitution = async (data: InstitutionPayload): Promise<Institution> => {
@@ -48,9 +59,46 @@ const updateInstitution = async (id: string, data: InstitutionPayload): Promise<
     }
 }
 
+const getCoursesByInstitutionId = async (institutionId: string): Promise<InstitutionCourse[]> => {
+    try {
+        const response = await api.get<InstitutionCourse[]>("/institution/getCoursesByInstitutionId", {
+            params: { institutionId },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Erro no serviço ao buscar cursos por instituição:", error);
+        throw error;
+    }
+};
+
+const addInstitutionCourse = async (institutionId: string, courseName: string): Promise<InstitutionCourse> => {
+    try {
+        const response = await api.post<InstitutionCourse>("/institution/course", {
+            institutionId,
+            courseName,
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Erro no serviço ao adicionar curso:", error);
+        throw error;
+    }
+};
+
+const removeInstitutionCourse = async (courseId: string): Promise<void> => {
+    try {
+        await api.delete(`/institution/course/${courseId}`);
+    } catch (error) {
+        console.error("Erro no serviço ao remover curso:", error);
+        throw error;
+    }
+};
+
 export const institutionService: IInstitutionService = {
 	createInstitution,
     getAllInstitutions,
     getInstitutionById,
     updateInstitution,
+    getCoursesByInstitutionId,
+    addInstitutionCourse,
+    removeInstitutionCourse,
 };

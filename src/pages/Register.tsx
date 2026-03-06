@@ -13,7 +13,7 @@ import { api, authService } from "@/services";
 import { useAuthForms } from "@/hooks/useAuthForms";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { COURSE_OPTIONS } from "@/constants/options";
+import { getCourseOptionsByInstitutionCode } from "@/constants/options";
 
 interface Institution {
   id: string;
@@ -47,10 +47,20 @@ export const Register = () => {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: yupResolver(registerSchema),
   });
+
+  const selectedInstitutionName = watch("institution");
+  const selectedInstitution = institutions.find(
+    (inst) => inst.name === selectedInstitutionName
+  );
+  const courseOptions = getCourseOptionsByInstitutionCode(
+    selectedInstitution?.institutionCode
+  );
 
   useEffect(() => {
     const fetchInstitutions = async () => {
@@ -67,6 +77,10 @@ export const Register = () => {
     };
     fetchInstitutions();
   }, []);
+
+  useEffect(() => {
+    setValue("course", "");
+  }, [selectedInstitutionName, setValue]);
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     const success = await handleRegister(data);
@@ -175,12 +189,17 @@ export const Register = () => {
               helperText={errors.course?.message}
               sx={{ margin: "1rem 0" }}
               required
+              disabled={!selectedInstitution || isLoadingInstitutions}
             >
-              {COURSE_OPTIONS.map((option) => (
+              {!selectedInstitution ? (
+                <MenuItem disabled>Selecione uma instituição primeiro</MenuItem>
+              ) : (
+                courseOptions.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
                 </MenuItem>
-              ))}
+                ))
+              )}
             </TextField>
 
             <PasswordField

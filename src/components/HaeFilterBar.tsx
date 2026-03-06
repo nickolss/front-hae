@@ -10,6 +10,7 @@ import {
   COURSE_OPTIONS,
   HAE_TYPE_OPTIONS,
   STATUS_OPTIONS,
+  SelectOption,
   VIEWED_OPTIONS,
 } from "@/constants/options";
 
@@ -24,12 +25,14 @@ interface HaeFilterBarProps {
   filters: HaeFilters;
   onFilterChange: (filters: HaeFilters) => void;
   onResetFilters: () => void;
+  courseOptions?: SelectOption[];
 }
 
 export const HaeFilterBar: React.FC<HaeFilterBarProps> = ({
   filters,
   onFilterChange,
   onResetFilters,
+  courseOptions = COURSE_OPTIONS,
 }) => {
   const handleChange = (field: keyof HaeFilters, value: string) => {
     onFilterChange({ ...filters, [field]: value });
@@ -47,7 +50,7 @@ export const HaeFilterBar: React.FC<HaeFilterBarProps> = ({
           <MenuItem value="">
             <em>Todos</em>
           </MenuItem>
-          {COURSE_OPTIONS.map((option) => (
+          {courseOptions.map((option) => (
             <MenuItem key={option.value} value={option.value}>
               {option.label}
             </MenuItem>

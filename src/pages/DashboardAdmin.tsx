@@ -7,6 +7,7 @@ import { CircularProgress, Typography } from "@mui/material";
 import { useAuth } from "@/hooks/useAuth";
 import { AxiosError } from "axios";
 import { HaeFilterBar, HaeFilters } from "@/components/HaeFilterBar";
+import { getCourseOptionsByInstitutionCode } from "@/constants/options";
 
 const INITIAL_FILTERS: HaeFilters = {
   course: "",
@@ -22,6 +23,9 @@ export const DashboardAdmin = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<HaeFilters>(INITIAL_FILTERS);
+  const courseOptions = getCourseOptionsByInstitutionCode(
+    user?.institution?.institutionCode
+  );
 
   const fetchHaes = useCallback(async () => {
     if (!user) return;
@@ -114,6 +118,7 @@ export const DashboardAdmin = () => {
           filters={filters}
           onFilterChange={setFilters}
           onResetFilters={() => setFilters(INITIAL_FILTERS)}
+          courseOptions={courseOptions}
         />
 
         {isLoading ? (

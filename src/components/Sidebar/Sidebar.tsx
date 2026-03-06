@@ -13,6 +13,7 @@ import {
   AlternateEmail,
   AddBusinessOutlined,
   BusinessOutlined,
+  SchoolOutlined,
 } from "@mui/icons-material";
 import { SidebarItem } from "./SidebarItem";
 
@@ -244,6 +245,12 @@ export const Sidebar = () => {
               icon={<BusinessOutlined sx={{ fill: "white" }} />}
               text="Gerenciar Instituições"
               active={isActive("/institutions")}
+            />
+            <SidebarItem
+              to="/institution-courses"
+              icon={<SchoolOutlined sx={{ fill: "white" }} />}
+              text="Gerenciar Cursos"
+              active={isActive("/institution-courses")}
             />
             <SidebarItem
               to="/approved-haes"

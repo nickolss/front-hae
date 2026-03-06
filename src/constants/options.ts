@@ -3,72 +3,7 @@ export interface SelectOption {
   label: string;
 }
 
-const ALL_COURSE_OPTIONS: SelectOption[] = [
-  {
-    value: "Análise e Desenvolvimento de Sistemas AMS",
-    label: "Análise e Desenvolvimento de Sistemas AMS",
-  },
-  {
-    value: "Análise e Desenvolvimento de Sistemas",
-    label: "Análise e Desenvolvimento de Sistemas",
-  },
-  { value: "Comercio Exterior", label: "Comércio Exterior" },
-  {
-    value: "Desenvolvimento de Produtos Plásticos",
-    label: "Desenvolvimento de Produtos Plásticos",
-  },
-  {
-    value: "Desenvolvimento de Software Multiplataforma",
-    label: "Desenvolvimento de Software Multiplataforma",
-  },
-  { value: "Gestão de Recursos Humanos", label: "Gestão de Recursos Humanos" },
-  { value: "Gestão Empresarial", label: "Gestão Empresarial" },
-  { value: "Gestão Empresarial EAD", label: "Gestão Empresarial EAD" },
-  { value: "Logística", label: "Logística" },
-  { value: "Polímeros", label: "Polímeros" },
-];
-
-const INSTITUTION_COURSES_BY_CODE: Record<number, string[]> = {
-  // Fatec Zona Leste
-  111: [
-    "Análise e Desenvolvimento de Sistemas AMS",
-    "Análise e Desenvolvimento de Sistemas",
-    "Comercio Exterior",
-    "Desenvolvimento de Produtos Plásticos",
-    "Desenvolvimento de Software Multiplataforma",
-    "Gestão de Recursos Humanos",
-    "Gestão Empresarial",
-    "Gestão Empresarial EAD",
-    "Logística",
-    "Polímeros",
-  ],
-  // Fatec Sao Roque (exemplo)
-  265: ["Logística", "Gestão Empresarial", "Gestão Empresarial EAD"],
-};
-
-const toSelectOption = (course: string): SelectOption => ({
-  value: course,
-  label: course === "Comercio Exterior" ? "Comércio Exterior" : course,
-});
-
-export const COURSE_OPTIONS: SelectOption[] = ALL_COURSE_OPTIONS;
-
-export const getCourseOptionsByInstitutionCode = (
-  institutionCode?: number | string | null
-): SelectOption[] => {
-  if (!institutionCode) {
-    return COURSE_OPTIONS;
-  }
-
-  const parsedCode = Number(institutionCode);
-  const institutionCourses = INSTITUTION_COURSES_BY_CODE[parsedCode];
-
-  if (!institutionCourses || institutionCourses.length === 0) {
-    return COURSE_OPTIONS;
-  }
-
-  return institutionCourses.map(toSelectOption);
-};
+export const COURSE_OPTIONS: SelectOption[] = [];
 
 export const HAE_TYPE_OPTIONS = [
   { value: "ApoioDirecao", label: "Apoio à Direção" },

@@ -9,11 +9,11 @@ import {
 import { PasswordField } from "@components/PasswordField";
 import { ToastNotification } from "@components/ToastNotification";
 import { registerSchema } from "@/validation/registerSchema";
-import { api, authService } from "@/services";
+import { api, authService, institutionService } from "@/services";
 import { useAuthForms } from "@/hooks/useAuthForms";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getCourseOptionsByInstitutionCode } from "@/constants/options";
+import { InstitutionCourse } from "@/services/institutionService";
 
 interface Institution {
   id: string;
@@ -42,7 +42,9 @@ export const Register = () => {
 
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [courseOptions, setCourseOptions] = useState<InstitutionCourse[]>([]);
   const [isLoadingInstitutions, setIsLoadingInstitutions] = useState(true);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(false);
 
   const {
     register,
@@ -57,9 +59,6 @@ export const Register = () => {
   const selectedInstitutionName = watch("institution");
   const selectedInstitution = institutions.find(
     (inst) => inst.name === selectedInstitutionName
-  );
-  const courseOptions = getCourseOptionsByInstitutionCode(
-    selectedInstitution?.institutionCode
   );
 
   useEffect(() => {
@@ -79,8 +78,29 @@ export const Register = () => {
   }, []);
 
   useEffect(() => {
-    setValue("course", "");
-  }, [selectedInstitutionName, setValue]);
+    const fetchCourses = async () => {
+      setValue("course", "");
+      setCourseOptions([]);
+
+      if (!selectedInstitution?.institutionCode) {
+        return;
+      }
+
+      try {
+        setIsLoadingCourses(true);
+        const courses = await institutionService.getCoursesByInstitutionCode(
+          selectedInstitution.institutionCode
+        );
+        setCourseOptions(courses);
+      } catch (error) {
+        console.error("Erro ao buscar cursos da instituição:", error);
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+
+    fetchCourses();
+  }, [selectedInstitutionName, selectedInstitution?.institutionCode, setValue]);
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     const success = await handleRegister(data);
@@ -189,14 +209,18 @@ export const Register = () => {
               helperText={errors.course?.message}
               sx={{ margin: "1rem 0" }}
               required
-              disabled={!selectedInstitution || isLoadingInstitutions}
+              disabled={!selectedInstitution || isLoadingInstitutions || isLoadingCourses}
             >
               {!selectedInstitution ? (
                 <MenuItem disabled>Selecione uma instituição primeiro</MenuItem>
+              ) : isLoadingCourses ? (
+                <MenuItem disabled>Carregando cursos...</MenuItem>
+              ) : courseOptions.length === 0 ? (
+                <MenuItem disabled>Nenhum curso cadastrado para esta Fatec</MenuItem>
               ) : (
                 courseOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
+                <MenuItem key={option.id} value={option.courseName}>
+                  {option.courseName}
                 </MenuItem>
                 ))
               )}

@@ -15,6 +15,7 @@ export interface IInstitutionService {
     getInstitutionById(id: string): Promise<Institution>;
     updateInstitution(id: string, data: InstitutionPayload): Promise<Institution>;
     getCoursesByInstitutionId(institutionId: string): Promise<InstitutionCourse[]>;
+	getCoursesByInstitutionCode(institutionCode: number): Promise<InstitutionCourse[]>;
     addInstitutionCourse(institutionId: string, courseName: string): Promise<InstitutionCourse>;
     removeInstitutionCourse(courseId: string): Promise<void>;
 }
@@ -71,6 +72,18 @@ const getCoursesByInstitutionId = async (institutionId: string): Promise<Institu
     }
 };
 
+const getCoursesByInstitutionCode = async (institutionCode: number): Promise<InstitutionCourse[]> => {
+    try {
+        const response = await api.get<InstitutionCourse[]>("/institution/getCoursesByInstitutionCode", {
+            params: { institutionCode },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Erro no serviço ao buscar cursos por código de instituição:", error);
+        throw error;
+    }
+};
+
 const addInstitutionCourse = async (institutionId: string, courseName: string): Promise<InstitutionCourse> => {
     try {
         const response = await api.post<InstitutionCourse>("/institution/course", {
@@ -99,6 +112,7 @@ export const institutionService: IInstitutionService = {
     getInstitutionById,
     updateInstitution,
     getCoursesByInstitutionId,
+	getCoursesByInstitutionCode,
     addInstitutionCourse,
     removeInstitutionCourse,
 };

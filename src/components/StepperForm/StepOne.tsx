@@ -9,11 +9,11 @@ import { StepOneProps, FormErrors } from "./types/haeFormTypes";
 import { stepOneSchema } from "@/validation/haeFormSchema";
 import { ValidationError } from "yup";
 import {
-  getCourseOptionsByInstitutionCode,
   HAE_TYPE_OPTIONS,
   MODALITY_OPTIONS,
   DIMENSAO_OPTIONS,
 } from "@/constants/options";
+import { institutionService, InstitutionCourse } from "@/services/institutionService";
 
 const StepOne: React.FC<StepOneProps> = ({
   onNext,
@@ -23,9 +23,7 @@ const StepOne: React.FC<StepOneProps> = ({
 }) => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [studentRAs, setStudentRAs] = useState<string[]>([""]);
-  const courseOptions = getCourseOptionsByInstitutionCode(
-    formData.institutionCode
-  );
+  const [courseOptions, setCourseOptions] = useState<InstitutionCourse[]>([]);
 
   useEffect(() => {
     if (formData.studentRAs) {
@@ -34,6 +32,27 @@ const StepOne: React.FC<StepOneProps> = ({
       );
     }
   }, [formData.studentRAs]);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      if (!formData.institutionCode) {
+        setCourseOptions([]);
+        return;
+      }
+
+      try {
+        const data = await institutionService.getCoursesByInstitutionCode(
+          Number(formData.institutionCode)
+        );
+        setCourseOptions(data);
+      } catch (error) {
+        console.error("Erro ao buscar cursos da instituição:", error);
+        setCourseOptions([]);
+      }
+    };
+
+    fetchCourses();
+  }, [formData.institutionCode]);
 
   const handleNext = async () => {
     try {
@@ -203,11 +222,11 @@ const StepOne: React.FC<StepOneProps> = ({
         onChange={(e) => handleChange("course", e.target.value)}
         error={!!errors.course}
         helperText={errors.course || " "}
-        disabled={isCompleted}
+        disabled={isCompleted || courseOptions.length === 0}
       >
         {courseOptions.map((option) => (
-          <MenuItem key={option.value} value={option.value}>
-            {option.label}
+          <MenuItem key={option.id} value={option.courseName}>
+            {option.courseName}
           </MenuItem>
         ))}
       </TextField>

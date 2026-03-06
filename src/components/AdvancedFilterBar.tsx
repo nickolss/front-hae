@@ -7,11 +7,11 @@ import {
   Button,
 } from "@mui/material";
 import {
-  getCourseOptionsByInstitutionCode,
   HAE_TYPE_OPTIONS,
   STATUS_OPTIONS,
 } from "@/constants/options";
 import { api } from "@/services";
+import { institutionService, InstitutionCourse } from "@/services/institutionService";
 
 interface Institution {
   id: string;
@@ -40,11 +40,9 @@ export const AdvancedFilterBar: React.FC<AdvancedFilterBarProps> = ({
 }) => {
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [courseOptions, setCourseOptions] = useState<InstitutionCourse[]>([]);
   const selectedInstitution = institutions.find(
     (inst) => inst.id === filters.institutionId
-  );
-  const courseOptions = getCourseOptionsByInstitutionCode(
-    selectedInstitution?.institutionCode
   );
 
   useEffect(() => {
@@ -60,6 +58,27 @@ export const AdvancedFilterBar: React.FC<AdvancedFilterBarProps> = ({
     };
     fetchInstitutions();
   }, []);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      if (!selectedInstitution?.id) {
+        setCourseOptions([]);
+        return;
+      }
+
+      try {
+        const courses = await institutionService.getCoursesByInstitutionId(
+          selectedInstitution.id
+        );
+        setCourseOptions(courses);
+      } catch (error) {
+        console.error("Erro ao buscar cursos para filtro avançado:", error);
+        setCourseOptions([]);
+      }
+    };
+
+    fetchCourses();
+  }, [selectedInstitution?.id]);
 
   const handleChange = (field: keyof AdvancedHaeFilters, value: string) => {
     onFilterChange({ ...filters, [field]: value });
@@ -98,8 +117,8 @@ export const AdvancedFilterBar: React.FC<AdvancedFilterBarProps> = ({
               <em>Todos</em>
             </MenuItem>
             {courseOptions.map((opt) => (
-              <MenuItem key={opt.value} value={opt.value}>
-                {opt.label}
+              <MenuItem key={opt.id} value={opt.courseName}>
+                {opt.courseName}
               </MenuItem>
             ))}
           </Select>

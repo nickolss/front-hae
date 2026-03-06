@@ -7,7 +7,7 @@ import { CircularProgress, Typography } from "@mui/material";
 import { useAuth } from "@/hooks/useAuth";
 import { AxiosError } from "axios";
 import { HaeFilterBar, HaeFilters } from "@/components/HaeFilterBar";
-import { getCourseOptionsByInstitutionCode } from "@/constants/options";
+import { InstitutionCourse, institutionService } from "@/services/institutionService";
 
 const INITIAL_FILTERS: HaeFilters = {
   course: "",
@@ -23,9 +23,34 @@ export const DashboardAdmin = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<HaeFilters>(INITIAL_FILTERS);
-  const courseOptions = getCourseOptionsByInstitutionCode(
-    user?.institution?.institutionCode
-  );
+  const [courseOptions, setCourseOptions] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+
+  useEffect(() => {
+    const fetchCourseOptions = async () => {
+      if (!user?.institution?.id) {
+        setCourseOptions([]);
+        return;
+      }
+
+      try {
+        const courses: InstitutionCourse[] =
+          await institutionService.getCoursesByInstitutionId(user.institution.id);
+        setCourseOptions(
+          courses.map((course) => ({
+            value: course.courseName,
+            label: course.courseName,
+          }))
+        );
+      } catch (error) {
+        console.error("Erro ao carregar cursos da instituição:", error);
+        setCourseOptions([]);
+      }
+    };
+
+    fetchCourseOptions();
+  }, [user?.institution?.id]);
 
   const fetchHaes = useCallback(async () => {
     if (!user) return;

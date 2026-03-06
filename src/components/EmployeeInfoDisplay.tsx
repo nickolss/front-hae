@@ -49,6 +49,9 @@ export const EmployeeInfoDisplay = ({
 			<div className="px-2 text-right md:text-left">
 				<p className="font-semibold truncate">{employee.name}</p>
 				<p className="text-gray-500">{employee.email}</p>
+				<p className="text-gray-500 text-xs">
+					Fatec: {employee.institution?.name ?? "Nao informada"}
+				</p>
 				<p className="text-gray-500 text-xs">{employee.role}</p>
 			</div>
 			{showIcon && (

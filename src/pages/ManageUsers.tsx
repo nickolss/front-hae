@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/services";
-import { useAuth, LoggedUser } from "@/hooks/useAuth";
+import { useAuth, LoggedUser, InstitutionInfo } from "@/hooks/useAuth";
+import { institutionService } from "@/services/institutionService";
 import {
   CircularProgress,
   Select,
@@ -15,7 +16,9 @@ const ROLES = ["PROFESSOR", "COORDENADOR", "ADMIN", "DIRETOR", "DEV"];
 
 export const ManageUsers = () => {
   const [employees, setEmployees] = useState<LoggedUser[]>([]);
+  const [institutions, setInstitutions] = useState<InstitutionInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingEmployeeId, setUpdatingEmployeeId] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -27,10 +30,19 @@ export const ManageUsers = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await api.get<LoggedUser[]>(
-          "/employee/getAllEmployee"
+        const [employeesResponse, institutionsResponse] = await Promise.all([
+          api.get<LoggedUser[]>("/employee/getAllEmployee"),
+          institutionService.getAllInstitutions(),
+        ]);
+
+        setEmployees(employeesResponse.data);
+        setInstitutions(
+          institutionsResponse.map((inst) => ({
+            id: inst.id,
+            name: inst.name,
+            institutionCode: inst.institutionCode,
+          }))
         );
-        setEmployees(response.data);
       } catch (err) {
         console.error("Erro ao buscar funcionários:", err);
         setSnackbar({
@@ -73,6 +85,54 @@ export const ManageUsers = () => {
     }
   };
 
+  const handleInstitutionChange = async (
+    employeeId: string,
+    newInstitutionId: string
+  ) => {
+    const selectedInstitution = institutions.find(
+      (institution) => institution.id === newInstitutionId
+    );
+
+    if (!selectedInstitution) {
+      setSnackbar({
+        open: true,
+        message: "Instituição selecionada é inválida.",
+        severity: "error",
+      });
+      return;
+    }
+
+    const originalEmployees = [...employees];
+    const updatedEmployees = employees.map((emp) =>
+      emp.id === employeeId ? { ...emp, institution: selectedInstitution } : emp
+    );
+
+    setEmployees(updatedEmployees);
+    setUpdatingEmployeeId(employeeId);
+
+    try {
+      await api.put(`/admin/change-institution/${employeeId}`, {
+        institutionId: selectedInstitution.id,
+        institutionCode: selectedInstitution.institutionCode,
+      });
+      setSnackbar({
+        open: true,
+        message: "FATEC do usuário atualizada com sucesso!",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar a FATEC do usuário:", error);
+      setEmployees(originalEmployees);
+      setSnackbar({
+        open: true,
+        message: "Falha ao atualizar a FATEC do usuário.",
+        severity: "error",
+      });
+    } finally {
+      setUpdatingEmployeeId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="h-screen flex justify-center items-center">
@@ -93,7 +153,7 @@ export const ManageUsers = () => {
       <main className="col-start-2 row-start-2 p-4 md:p-8 overflow-auto bg-gray-50 pt-20 md:pt-4 h-full">
         <h2 className="subtitle font-semibold">Gerenciar Usuários</h2>
         <p className="text-gray-600 mb-6">
-          Altere as permissões dos usuários do sistema.
+          Altere permissões e a FATEC vinculada aos usuários do sistema.
         </p>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
@@ -108,6 +168,9 @@ export const ManageUsers = () => {
                 </th>
                 <th scope="col" className="px-6 py-3">
                   Permissão (Role)
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  FATEC
                 </th>
               </tr>
             </thead>
@@ -140,6 +203,30 @@ export const ManageUsers = () => {
                         {ROLES.map((role) => (
                           <MenuItem key={role} value={role}>
                             {role}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </td>
+                  <td className="px-6 py-4">
+                    <FormControl
+                      size="small"
+                      variant="outlined"
+                      sx={{ minWidth: 220 }}
+                    >
+                      <Select
+                        value={employee.institution?.id ?? ""}
+                        onChange={(e) =>
+                          handleInstitutionChange(employee.id, e.target.value)
+                        }
+                        disabled={
+                          employee.id === adminUser?.id ||
+                          updatingEmployeeId === employee.id
+                        }
+                      >
+                        {institutions.map((institution) => (
+                          <MenuItem key={institution.id} value={institution.id}>
+                            {institution.name}
                           </MenuItem>
                         ))}
                       </Select>

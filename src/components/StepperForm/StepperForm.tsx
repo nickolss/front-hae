@@ -164,7 +164,6 @@ const StepperForm: React.FC = () => {
         setIsConfirmDialogOpen(true);
       } else {
         setIsSubmitting(true);
-        console.log("Submitting form data:", formData);
         const success = await handleCreateHae(formData);
         if (success) {
           setTimeout(() => navigate("/myrequests"), 2000);

@@ -2,6 +2,7 @@ import { api } from ".";
 import { Hae } from "@/types/hae";
 import { LoggedUser } from "@/hooks/useAuth";
 import { Institution } from "@/types/institution";
+import { PageResponse } from "@/types/pagination";
 
 export interface DashboardStats {
 	haeCount: number;
@@ -20,12 +21,12 @@ const getDevDashboardStats = async (): Promise<DashboardStats> => {
 	try {
 		const [haesRes, usersRes, institutionsRes] = await Promise.all([
 			api.get<Hae[]>("/hae/getAll"),
-			api.get<LoggedUser[]>("/employee/getAllEmployee"),
+			api.get<PageResponse<LoggedUser>>("/employee/getAllEmployee", { params: { size: 999 } }),
 			api.get<Institution[]>("/institution/getAll"),
 		]);
 
 		const haes = haesRes.data;
-		const users = usersRes.data;
+		const users = usersRes.data.content;
 
 		const haesByStatus = haes.reduce<Record<string, number>>((acc, hae) => {
 			acc[hae.status] = (acc[hae.status] || 0) + 1;

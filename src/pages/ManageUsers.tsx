@@ -9,15 +9,23 @@ import {
   FormControl,
   Snackbar,
   Alert,
+  TextField,
+  InputAdornment,
+  TablePagination,
+  LinearProgress,
+  IconButton,
 } from "@mui/material";
+import { Search as SearchIcon, Clear as ClearIcon } from "@mui/icons-material";
 import { AppLayout } from "@/layouts";
+import { PageResponse } from "@/types/pagination";
 
 const ROLES = ["PROFESSOR", "COORDENADOR", "ADMIN", "DIRETOR", "DEV"];
 
 export const ManageUsers = () => {
   const [employees, setEmployees] = useState<LoggedUser[]>([]);
   const [institutions, setInstitutions] = useState<InstitutionInfo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [updatingEmployeeId, setUpdatingEmployeeId] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -25,17 +33,19 @@ export const ManageUsers = () => {
     severity: "success" | "error";
   } | null>(null);
 
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalElements, setTotalElements] = useState(0);
+  const [searchName, setSearchName] = useState("");
+  const [debouncedSearchName, setDebouncedSearchName] = useState("");
+
   const { user: adminUser } = useAuth();
 
+  // Fetch institutions once
   useEffect(() => {
-    const fetchEmployees = async () => {
+    const fetchInstitutions = async () => {
       try {
-        const [employeesResponse, institutionsResponse] = await Promise.all([
-          api.get<LoggedUser[]>("/employee/getAllEmployee"),
-          institutionService.getAllInstitutions(),
-        ]);
-
-        setEmployees(employeesResponse.data);
+        const institutionsResponse = await institutionService.getAllInstitutions();
         setInstitutions(
           institutionsResponse.map((inst) => ({
             id: inst.id,
@@ -43,6 +53,39 @@ export const ManageUsers = () => {
             institutionCode: inst.institutionCode,
           }))
         );
+      } catch (err) {
+        console.error("Erro ao buscar instituições:", err);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+    fetchInstitutions();
+  }, []);
+
+  // Debounce search name
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchName(searchName);
+      setPage(0); // Reset to first page on new search
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchName]);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get<PageResponse<LoggedUser>>("/employee/getAllEmployee", {
+          params: {
+            page: page,
+            size: rowsPerPage,
+            name: debouncedSearchName,
+          },
+        });
+
+        setEmployees(response.data.content);
+        setTotalElements(response.data.totalElements);
       } catch (err) {
         console.error("Erro ao buscar funcionários:", err);
         setSnackbar({
@@ -52,10 +95,11 @@ export const ManageUsers = () => {
         });
       } finally {
         setLoading(false);
+        setInitialLoading(false);
       }
     };
     fetchEmployees();
-  }, []);
+  }, [page, rowsPerPage, debouncedSearchName]);
 
   const handleRoleChange = async (employeeId: string, newRole: string) => {
     const originalEmployees = [...employees];
@@ -133,7 +177,7 @@ export const ManageUsers = () => {
     }
   };
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <div className="h-screen flex justify-center items-center">
         <CircularProgress
@@ -156,7 +200,42 @@ export const ManageUsers = () => {
           Altere permissões e a FATEC vinculada aos usuários do sistema.
         </p>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
+        <div className="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Pesquisar por nome..."
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+            className="md:max-w-md bg-white"
+            size="small"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon className="text-gray-400" />
+                </InputAdornment>
+              ),
+              endAdornment: searchName && (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setSearchName("")}
+                    edge="end"
+                  >
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden relative">
+          {loading && (
+            <div className="absolute top-0 left-0 right-0 z-10">
+              <LinearProgress sx={{ backgroundColor: '#f3f4f6', '& .MuiLinearProgress-bar': { backgroundColor: '#c10007' } }} />
+            </div>
+          )}
           <table className="w-full text-sm text-left text-gray-500">
             <thead className="text-xs text-gray-700 uppercase bg-gray-100">
               <tr>
@@ -236,6 +315,26 @@ export const ManageUsers = () => {
               ))}
             </tbody>
           </table>
+          {employees.length === 0 && !loading && (
+            <div className="p-8 text-center text-gray-500">
+              Nenhum usuário encontrado.
+            </div>
+          )}
+          <TablePagination
+            component="div"
+            count={totalElements}
+            page={page}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={(e) => {
+              setRowsPerPage(parseInt(e.target.value, 10));
+              setPage(0);
+            }}
+            labelRowsPerPage="Linhas por página"
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
+            }
+          />
         </div>
       </main>
 

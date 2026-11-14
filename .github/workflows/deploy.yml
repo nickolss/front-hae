@@ -1,0 +1,73 @@
+name: Deploy (Vercel)
+
+# PR -> deploy de preview (URL comentada no PR); push em main -> produção.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  ci:
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+
+  deploy:
+    name: Deploy
+    needs: ci
+    if: always() && (needs.ci.result == 'success' || needs.ci.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Verifica configuração
+        env:
+          TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: test -n "$TOKEN" -a -n "$VERCEL_ORG_ID" -a -n "$VERCEL_PROJECT_ID" || { echo "::error::Configure VERCEL_TOKEN, VERCEL_ORG_ID e VERCEL_PROJECT_ID"; exit 1; }
+      - name: Build e deploy
+        id: deploy
+        env:
+          TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          PROD: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
+          TARGET: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+        run: |
+          flags=()
+          if [ -n "$PROD" ]; then flags+=(--prod); fi
+          npx --yes vercel@latest pull --yes --environment="$TARGET" --token="$TOKEN"
+          npx --yes vercel@latest build "${flags[@]}" --token="$TOKEN"
+          url=$(npx --yes vercel@latest deploy --prebuilt "${flags[@]}" --token="$TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Publicado em $url" >> "$GITHUB_STEP_SUMMARY"
+      - name: Comenta a URL de preview no PR
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: ${{ steps.deploy.outputs.url }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr comment "$PR" --edit-last --create-if-none --body "Preview: $URL"

@@ -67,7 +67,7 @@ export function HaeForm({
   onSubmit,
   onCancel,
 }: Props) {
-  const { control, register, handleSubmit, formState } = useForm<HaeFormValues>({
+  const { control, register, handleSubmit, formState, setValue } = useForm<HaeFormValues>({
     resolver: zodResolver(haeSchema),
     defaultValues,
   });
@@ -353,6 +353,13 @@ export function HaeForm({
             Total no cronograma: <strong>{planned} h/semana</strong>
             {weeklyHours > 0 && planned !== weeklyHours && ` — diferente das ${weeklyHours} h declaradas.`}
           </Typography>
+          {planned >= 1 && planned <= 40 && Number.isInteger(planned) && planned !== weeklyHours && (
+            <Box>
+              <Button size="small" onClick={() => setValue("weeklyHours", planned, { shouldValidate: true })}>
+                Usar {planned} h como carga semanal
+              </Button>
+            </Box>
+          )}
         </Stack>
       </Section>
 

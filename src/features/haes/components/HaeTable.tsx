@@ -25,16 +25,17 @@ import type { HaeSummary } from "../types";
 interface Props {
   page: Page<HaeSummary>;
   showOwner?: boolean;
+  hidePagination?: boolean;
   onPageChange: (page: number) => void;
   onSizeChange: (size: number) => void;
 }
 
 /** Tabela no desktop, cartões no celular. */
-export function HaeTable({ page, showOwner, onPageChange, onSizeChange }: Props) {
+export function HaeTable({ page, showOwner, hidePagination, onPageChange, onSizeChange }: Props) {
   const theme = useTheme();
   const compact = useMediaQuery(theme.breakpoints.down("md"));
 
-  const pagination = (
+  const pagination = hidePagination ? null : (
     <TablePagination
       component="div"
       count={page.totalElements}

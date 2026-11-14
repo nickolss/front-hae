@@ -128,6 +128,14 @@ export function AppShell() {
               </Typography>
             )}
           </Box>
+          <Box sx={{ display: { xs: "none", sm: "block" }, textAlign: "right", mr: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+              {user.name}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {ROLE_LABELS[user.role]}
+            </Typography>
+          </Box>
           <Tooltip title="Conta e sair">
             <IconButton
               onClick={(e) => setMenuAnchor(e.currentTarget)}

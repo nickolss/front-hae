@@ -30,6 +30,10 @@ export function semesterOptions(today = new Date(), count = 6): { value: string;
   return result;
 }
 
+/** "1 HAE aprovada" / "3 HAEs aprovadas". */
+export const plural = (count: number, singular: string, pluralForm: string) =>
+  `${count} ${count === 1 ? singular : pluralForm}`;
+
 export const formatFileSize = (bytes: number) =>
   bytes < 1024 * 1024
     ? `${Math.max(1, Math.round(bytes / 1024))} KB`

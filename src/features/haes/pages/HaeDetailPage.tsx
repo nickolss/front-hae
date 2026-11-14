@@ -42,16 +42,27 @@ import { ReviewDialog } from "../components/ReviewDialog";
 import { ClosureDialog } from "../components/ClosureDialog";
 import { AttachmentsCard } from "../components/AttachmentsCard";
 import { ClosureHistory } from "../components/ClosureHistory";
+import { useUser } from "@/features/auth/session";
 import { haeApi, haeKeys } from "../api";
 import type { Attachment, Hae } from "../types";
 
-const STEPS = ["Enviada", "Avaliada", "Fechamento enviado", "Concluída"];
+const STEPS = ["Envio", "Avaliação", "Fechamento", "Conclusão"];
+
+/** Orientação para quem avalia (o dono da HAE vê STATUS_HINTS) — Nielsen #2. */
+const REVIEWER_HINTS: Record<Hae["status"], string> = {
+  PENDENTE: "Aguardando a avaliação da coordenação.",
+  APROVADO: "Em execução. O professor enviará o relatório de fechamento ao final.",
+  REPROVADO: "Devolvida ao professor para ajustes.",
+  FECHAMENTO_SOLICITADO: "Relatório de fechamento aguardando avaliação.",
+  COMPLETO: "HAE encerrada.",
+};
 
 function activeStep(hae: Hae) {
   switch (hae.status) {
     case "PENDENTE":
       return 1;
     case "REPROVADO":
+      return 1;
     case "APROVADO":
       return 2;
     case "FECHAMENTO_SOLICITADO":
@@ -68,6 +79,7 @@ export function HaeDetailPage() {
   const navigate = useNavigate();
   const notify = useNotify();
   const client = useQueryClient();
+  const user = useUser();
   const hae = useQuery({ queryKey: haeKeys.detail(id), queryFn: () => haeApi.get(id) });
 
   const [review, setReview] = useState<Review>(null);
@@ -161,6 +173,8 @@ export function HaeDetailPage() {
   const h = hae.data;
   const p = h.permissions;
   const rejected = h.status === "REPROVADO";
+  const isOwner = h.employee.id === user.id;
+  const hint = isOwner ? STATUS_HINTS[h.status] : REVIEWER_HINTS[h.status];
 
   return (
     <>
@@ -208,7 +222,7 @@ export function HaeDetailPage() {
               sx={{ alignItems: { sm: "center" }, mb: 2 }}
             >
               <StatusChip status={h.status} size="medium" />
-              <Typography color="text.secondary">{STATUS_HINTS[h.status]}</Typography>
+              <Typography color="text.secondary">{hint}</Typography>
             </Stack>
             <Stepper activeStep={activeStep(h)} alternativeLabel aria-label="Etapas da HAE">
               {STEPS.map((label, i) => (
@@ -228,7 +242,7 @@ export function HaeDetailPage() {
           </CardContent>
         </Card>
 
-        {(p.canReview || p.canReviewClosure || p.canRequestClosure) && (
+        {(p.canReview || p.canReviewClosure || p.canRequestClosure || (rejected && p.canEdit)) && (
           <Card sx={{ borderColor: "primary.main" }}>
             <CardContent>
               <Typography variant="h2" sx={{ mb: 1 }}>
@@ -274,6 +288,16 @@ export function HaeDetailPage() {
                       Recusar fechamento
                     </Button>
                   </>
+                )}
+                {rejected && p.canEdit && (
+                  <Button
+                    component={RouterLink}
+                    to={`/haes/${h.id}/editar`}
+                    variant="contained"
+                    startIcon={<EditOutlined />}
+                  >
+                    Ajustar e reenviar
+                  </Button>
                 )}
                 {p.canRequestClosure && (
                   <Button

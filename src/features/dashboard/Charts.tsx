@@ -42,14 +42,22 @@ function AccessibleData({ caption, data }: { caption: string; data: Datum[] }) {
   );
 }
 
-export function DoughnutChart({ caption, data }: { caption: string; data: Datum[] }) {
+export function DoughnutChart({
+  caption,
+  data,
+  colors,
+}: {
+  caption: string;
+  data: Datum[];
+  colors?: string[];
+}) {
   return (
     <Box sx={{ position: "relative", height: 260 }}>
       <Doughnut
         aria-hidden
         data={{
           labels: data.map((d) => d.label),
-          datasets: [{ data: data.map((d) => d.value), backgroundColor: PALETTE }],
+          datasets: [{ data: data.map((d) => d.value), backgroundColor: colors ?? PALETTE }],
         }}
         options={{ maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }}
       />

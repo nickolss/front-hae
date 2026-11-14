@@ -29,9 +29,18 @@ import {
   type HaeStatus,
   type HaeType,
 } from "@/shared/domain/labels";
-import { currentSemester, semesterOptions } from "@/shared/lib/format";
+import { currentSemester, plural, semesterOptions } from "@/shared/lib/format";
 import { dashboardApi } from "./api";
 import { BarChart, DoughnutChart } from "./Charts";
+
+/** Mesmas cores semânticas do StatusChip (verde = aprovada, vermelho = reprovada…). */
+const STATUS_COLORS: Record<HaeStatus, string> = {
+  PENDENTE: "#78909c",
+  APROVADO: "#2e7d32",
+  REPROVADO: "#c62828",
+  FECHAMENTO_SOLICITADO: "#ed6c02",
+  COMPLETO: "#0277bd",
+};
 
 function Kpi({
   label,
@@ -113,7 +122,8 @@ function ProfessorHome() {
               </Button>
             }
           >
-            Você tem {rejected.data!.totalElements} HAE(s) reprovada(s) aguardando ajustes.
+            {plural(rejected.data!.totalElements, "HAE reprovada aguarda", "HAEs reprovadas aguardam")} seus
+            ajustes.
           </Alert>
         )}
         {(pendingAction.data?.totalElements ?? 0) > 0 && (
@@ -125,8 +135,8 @@ function ProfessorHome() {
               </Button>
             }
           >
-            {pendingAction.data!.totalElements} HAE(s) aprovada(s): ao concluir as atividades, envie o
-            relatório de fechamento.
+            {plural(pendingAction.data!.totalElements, "HAE aprovada", "HAEs aprovadas")}: ao concluir as
+            atividades, envie o relatório de fechamento.
           </Alert>
         )}
       </Stack>
@@ -149,7 +159,8 @@ function ProfessorHome() {
       ) : (
         <>
           <HaeTable
-            page={{ ...recent.data, totalElements: recent.data.content.length, totalPages: 1 }}
+            page={recent.data}
+            hidePagination
             onPageChange={() => undefined}
             onSizeChange={() => undefined}
           />
@@ -287,6 +298,7 @@ function ManagerHome() {
                     </Typography>
                     <DoughnutChart
                       caption="HAEs por situação"
+                      colors={(Object.keys(s!.byStatus) as HaeStatus[]).map((k) => STATUS_COLORS[k])}
                       data={(Object.keys(s!.byStatus) as HaeStatus[]).map((k) => ({
                         label: STATUS_LABELS[k],
                         value: s!.byStatus[k],

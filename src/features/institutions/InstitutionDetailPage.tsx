@@ -144,8 +144,8 @@ export function InstitutionDetailPage() {
               {h && (
                 <>
                   <Typography sx={{ mb: 1 }}>
-                    Semestre {h.semester}: <strong>{h.allocated} h</strong> alocadas de{" "}
-                    {h.limit} h ({h.remaining} h disponíveis)
+                    Semestre {h.semester}: <strong>{h.allocated} h</strong> alocadas de {h.limit} h (
+                    {h.remaining} h disponíveis)
                   </Typography>
                   <LinearProgress
                     variant="determinate"

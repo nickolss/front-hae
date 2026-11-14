@@ -144,7 +144,7 @@ export function InstitutionDetailPage() {
               {h && (
                 <>
                   <Typography sx={{ mb: 1 }}>
-                    Semestre {h.semester.replace("/", "/")}: <strong>{h.allocated} h</strong> alocadas de{" "}
+                    Semestre {h.semester}: <strong>{h.allocated} h</strong> alocadas de{" "}
                     {h.limit} h ({h.remaining} h disponíveis)
                   </Typography>
                   <LinearProgress

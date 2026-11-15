@@ -21,6 +21,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import Logout from "@mui/icons-material/Logout";
 import { navigationFor } from "@/app/navigation";
+import { DemoBanner } from "@/shared/components/DemoBanner";
 import { useLogout, useUser } from "@/features/auth/session";
 import { ROLE_LABELS } from "@/shared/domain/labels";
 
@@ -198,6 +199,7 @@ export function AppShell() {
         sx={{ flexGrow: 1, minWidth: 0, p: { xs: 2, sm: 3, lg: 4 }, mt: 8, outline: "none" }}
       >
         <Box sx={{ maxWidth: 1200, mx: "auto" }}>
+          <DemoBanner />
           <Outlet />
         </Box>
       </Box>

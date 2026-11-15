@@ -9,6 +9,7 @@ import { errorMessage } from "@/shared/api/problem";
 import { authApi } from "../api";
 import { SESSION_KEY } from "../session";
 import { loginSchema, type LoginForm } from "../schemas";
+import { DemoAccounts } from "../components/DemoAccounts";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -16,7 +17,9 @@ export function LoginPage() {
   const client = useQueryClient();
   const state = location.state as { from?: string; expired?: boolean; message?: string } | null;
 
-  const { register, handleSubmit, formState } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
+  const { register, handleSubmit, formState, setValue, setFocus } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+  });
   const login = useMutation({
     mutationFn: (data: LoginForm) => authApi.login(data.email, data.password),
     onSuccess: (profile) => {
@@ -66,6 +69,12 @@ export function LoginPage() {
           </Link>
         </Typography>
       </Stack>
+      <DemoAccounts
+        onSelect={(email) => {
+          setValue("email", email, { shouldValidate: true });
+          setFocus("password");
+        }}
+      />
     </AuthLayout>
   );
 }

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Box, Container, Paper, Typography } from "@mui/material";
 import { useDocumentTitle } from "@/shared/hooks/useDocumentTitle";
+import { DemoBanner } from "./DemoBanner";
 
 /** Layout das telas públicas (login, cadastro, recuperação de senha). */
 export function AuthLayout({
@@ -21,6 +22,7 @@ export function AuthLayout({
     >
       <Container maxWidth="sm">
         <Paper sx={{ p: { xs: 3, sm: 5 } }} variant="outlined">
+          <DemoBanner />
           <Box component="img" src="/logo_fatec_cor.png" alt="Fatec" sx={{ height: 48, mb: 2 }} />
           <Typography variant="h1" sx={{ mb: subtitle ? 1 : 3 }}>
             {title}
